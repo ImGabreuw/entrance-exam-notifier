@@ -5,9 +5,12 @@ import br.com.gabreuw.entranceexamnotifier.application.dataprovider.authenticati
 import br.com.gabreuw.entranceexamnotifier.application.mapper.authentication.UserMapper;
 import br.com.gabreuw.entranceexamnotifier.domain.entities.authentication.User;
 import br.com.gabreuw.entranceexamnotifier.domain.ports.repository.UserRepository;
+import br.com.gabreuw.entranceexamnotifier.shared.pagination.PageInfo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -16,6 +19,18 @@ public class UserRepositoryImpl implements UserRepository {
 
     private final UserJpaRepository userJpaRepository;
     private final UserMapper userMapper;
+
+    @Override
+    public List<User> findAll(PageInfo pageInfo) {
+        var page = pageInfo
+                .toPageRequest()
+                .withSort(Sort.by("name").ascending());
+
+        return userJpaRepository
+                .findAll(page)
+                .map(userMapper::toDomain)
+                .toList();
+    }
 
     @Override
     public Optional<User> findByEmail(String email) {
